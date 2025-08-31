@@ -1,0 +1,79 @@
+Klovy Chat License 1.0
+
+Copyright (c) 2025 Klovy Chat
+
+1. Definitions
+
+"Software" means the source code, binaries, documentation, and all other components of the Klovy Chat project covered by this license.
+
+"Authors" means the authors and contributors to the Klovy Chat project.
+
+"User" means any person or entity using the Software in accordance with this license.
+
+"Modification" means any modification, adaptation, extension, or integration of the Software, in whole or in part.
+
+"Distribution" means making copies of the Software or its Modifications publicly available in any form.
+
+2. Rights Granted
+
+Under this license, you are granted, free of charge, perpetual, worldwide permission to:
+
+Use the Software for any purpose, both private and commercial.
+
+Copy and distribute the Software in unmodified form.
+
+Modify the Software, including creating your own versions, forks, and derivative works.
+
+Distribute Modifications provided that you comply with the terms of this License.
+
+Combine the Software with other projects and publish the entire copy, provided that doing so does not violate the terms of this License.
+
+3. Terms
+
+Each copy of the Software, whether original or modified, must include the copyright notice and the complete text of this License.
+
+When Distributing Modifications, you must clearly indicate any changes made to the original Software.
+
+Distribution in binary form requires the complete source code or a reference to a publicly available repository where the source code is located.
+
+This License does not grant you the right to use any names, trademarks, or logos associated with Klovy Chat without the separate written consent of the Authors.
+
+Any additional licenses, restrictions, or conditions added by you may not limit the rights granted in this License.
+
+4. Restrictions
+
+The Software may not be used in a manner inconsistent with applicable law.
+
+The Software may not be used for malicious activities, such as spam, cyberattacks, invasions of privacy, or the distribution of malware.
+
+The Software may not be used for military, surveillance, or repressive purposes that could violate human rights.
+
+5. Patent and Intellectual Property
+
+The authors hereby grant Users a non-exclusive, irrevocable patent license to use, modify, and distribute the Software.
+
+In the event of a legal dispute regarding patent infringement of the Software, the license is automatically terminated against the entity initiating such dispute.
+
+6. No Warranty or Liability
+
+THE SOFTWARE IS PROVIDED "AS IS," WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+
+THE AUTHORS SHALL NOT BE LIABLE FOR ANY DAMAGES, INCLUDING, BUT NOT LIMITED TO, LOSS OF DATA, BUSINESS INTERRUPTION, LOSS OF PROFITS, OR INJURY CAUSED BY THE USE OF THE SOFTWARE.
+
+7. License Termination
+
+Breach of the terms of this license will result in its automatic termination for the User.
+
+If the license terminates, the User must immediately cease use of the Software and delete all copies thereof.
+
+8. Jurisdiction and Governing Law
+
+This license is governed by the laws of the country where the principal author of the project resides.
+
+Any disputes arising under this license will be resolved by a court of competent jurisdiction in that jurisdiction.
+
+9. License Amendments
+
+The authors may publish subsequent versions of this license.
+
+Users may use the Software under the terms of this license or any later version published by the Authors.
