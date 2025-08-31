@@ -152,7 +152,7 @@ This project is licensed under the [LICENSE](LICENSE.txt) file in the repository
 
 ## 🔗 Related Projects
 
-- Frontend: [klovy-chat-frontend](https://github.com/Klovy-Chat/klovy-chat-frontend)
+- Frontend: [klovy-chat-frontend](https://github.com/Klovy/klovy-chat-frontend)
 
 ## 📞 Support
 
