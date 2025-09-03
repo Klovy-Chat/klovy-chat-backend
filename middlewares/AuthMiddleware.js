@@ -9,23 +9,38 @@ const verifyToken = async (req, res, next) => {
       return res.status(401).json({ message: "Authentication token missing." });
     }
 
+    if (token.length > 1000) {
+      return res.status(401).json({ message: "Invalid token format." });
+    }
+
     const payload = jwt.verify(token, process.env.JWT_KEY);
 
     if (!payload?.userId) {
       return res.status(403).json({ message: "Invalid token payload." });
     }
 
-    const user = await User.findById(payload.userId);
+    const user = await User.findById(payload.userId).select('+tokenVersion');
 
-    if (!user || user.tokenVersion !== payload.tokenVersion) {
+    if (!user) {
+      return res.status(403).json({ message: "User not found." });
+    }
+
+    if (user.tokenVersion !== payload.tokenVersion) {
       return res
         .status(403)
         .json({ message: "Token is invalid (version mismatch)." });
     }
 
-    req.userId = user._id.toString();
-    req.user = { id: user._id.toString() };
+    if (user.isBlocked || !user.isActive) {
+      return res.status(403).json({ message: "Account is inactive." });
+    }
 
+    req.userId = payload.userId;
+    req.user = { 
+      id: payload.userId,
+      email: user.email,
+      isWhitelisted: user.isWhitelisted 
+    };
     next();
   } catch (err) {
     console.error("Auth middleware error:", err);

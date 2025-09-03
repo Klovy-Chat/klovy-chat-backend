@@ -1,29 +1,31 @@
-import nodemailer from 'nodemailer';
-import dotenv from 'dotenv';
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
 
-dotenv.config({ path: '.env' });
+dotenv.config({ path: ".env" });
 
 if (!process.env.EMAIL_PASSWORD) {
-    throw new Error('EMAIL_PASSWORD environment variable is required but not provided');
+  throw new Error(
+    "EMAIL_PASSWORD environment variable is required but not provided",
+  );
 }
 
 const transporter = nodemailer.createTransport({
-    host: "mail1.titanaxe.com",
-    port: 465,
-    secure: true,
-    auth: {
-        user: "noreply@klovy.org",
-        pass: process.env.EMAIL_PASSWORD
-    }
+  host: "mail1.titanaxe.com",
+  port: 465,
+  secure: true,
+  auth: {
+    user: "noreply@klovy.org",
+    pass: process.env.EMAIL_PASSWORD,
+  },
 });
 
 export const sendResetPasswordEmail = async (to, resetToken) => {
-    const resetUrl = `https://chat.klovy.org/auth/reset-password/${resetToken}`;
-    const mailOptions = {
-      from: 'Klovy Chat <noreply@klovy.org>',
-      to: to,
-      subject: 'Reset your Klovy Chat password',
-      html: `
+  const resetUrl = `https://chat.klovy.org/auth/reset-password/${resetToken}`;
+  const mailOptions = {
+    from: "Klovy Chat <noreply@klovy.org>",
+    to: to,
+    subject: "Reset your Klovy Chat password",
+    html: `
       <div style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 40px 0;">
         <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; padding: 30px; box-shadow: 0 0 4px rgba(0,0,0,0.05);">
           
@@ -64,23 +66,23 @@ ${resetUrl}
 
         </div>
       </div>
-      `
-    };
-    try {
-        await transporter.sendMail(mailOptions);
-    } catch (error) {
-        console.error('Error sending email:', error);
-        throw new Error('Failed to send reset password email');
-    }
+      `,
+  };
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw new Error("Failed to send reset password email");
+  }
 };
 
 export const sendVerificationEmail = async (to, verificationToken) => {
-    const verifyUrl = `https://chat.klovy.org/auth/verify-email/${verificationToken}`;
-    const mailOptions = {
-        from: 'Klovy Chat <noreply@klovy.org>',
-        to: to,
-        subject: 'Verify your Klovy Chat account',
-        html: `
+  const verifyUrl = `https://chat.klovy.org/auth/verify-email/${verificationToken}`;
+  const mailOptions = {
+    from: "Klovy Chat <noreply@klovy.org>",
+    to: to,
+    subject: "Verify your Klovy Chat account",
+    html: `
         <div style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 40px 0;">
           <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; padding: 30px; box-shadow: 0 0 4px rgba(0,0,0,0.05);">
             <p style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 1px;">Email verification</p>
@@ -108,12 +110,12 @@ export const sendVerificationEmail = async (to, verificationToken) => {
             </p>
           </div>
         </div>
-        `
-    };
-    try {
-        await transporter.sendMail(mailOptions);
-    } catch (error) {
-        console.error('Error sending verification email:', error);
-        throw new Error('Failed to send verification email');
-    }
+        `,
+  };
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.error("Error sending verification email:", error);
+    throw new Error("Failed to send verification email");
+  }
 };

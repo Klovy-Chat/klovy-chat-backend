@@ -15,36 +15,31 @@ import {
 
 const channelRoutes = Router();
 
-channelRoutes.patch(
-  "/:channelId/name",
-  verifyToken,
-  renameChannel
-);
+channelRoutes.patch("/:channelId/name", verifyToken, renameChannel);
 
-channelRoutes.delete(
-  "/:channelId/avatar",
-  verifyToken,
-  deleteChannelAvatar
-);
+channelRoutes.delete("/:channelId/avatar", verifyToken, deleteChannelAvatar);
 
 channelRoutes.post(
   "/:channelId/avatar",
   verifyToken,
   uploadChannelAvatarMiddleware.single("avatar"),
-  uploadChannelAvatar
+  uploadChannelAvatar,
 );
 
 channelRoutes.post("/create-channel", verifyToken, createChannel);
+
 channelRoutes.get("/get-user-channels", verifyToken, getUserChannels);
+
 channelRoutes.get(
   "/get-channel-messages/:channelId",
   verifyToken,
-  getChannelMessages
+  getChannelMessages,
 );
 
 channelRoutes.post("/leave/:channelId", verifyToken, leaveChannel);
+
 channelRoutes.post("/add-user/:channelId", verifyToken, addUserToChannel);
 
-export default channelRoutes;
-
 channelRoutes.delete("/delete/:channelId", verifyToken, deleteChannel);
+
+export default channelRoutes;
