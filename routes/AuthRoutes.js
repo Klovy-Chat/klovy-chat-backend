@@ -17,7 +17,7 @@ import { emailVerificationLimiter } from "../utils/ratelimit/emailVerificationLi
 import { 
   requireActiveAccount, 
   logSuspiciousActivity 
-} from "../middlewares/AuthorizationMiddleware.js";
+} from "../middlewares/AuthMiddleware.js";
 import multer from "multer";
 
 const authRoutes = Router();

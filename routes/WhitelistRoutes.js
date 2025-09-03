@@ -1,11 +1,10 @@
 import { Router } from "express";
 import { approveUser } from "../controllers/WhitelistController.js";
-import verifyToken from "../middlewares/AuthMiddleware.js";
-import { 
+import verifyToken, { 
   requireAdmin, 
   requireActiveAccount,
   logSuspiciousActivity 
-} from "../middlewares/AuthorizationMiddleware.js";
+} from "../middlewares/AuthMiddleware.js";
 import { adminActionLimiter } from "../utils/ratelimit/adminActionLimiter.js";
 
 const whitelistRoutes = Router();

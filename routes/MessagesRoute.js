@@ -4,12 +4,11 @@ import {
   uploadFile,
   editMessage,
 } from "../controllers/MessagesController.js";
-import verifyToken from "../middlewares/AuthMiddleware.js";
-import { 
+import verifyToken, { 
   requireActiveAccount,
   requireOwnershipOrAdmin,
   logSuspiciousActivity 
-} from "../middlewares/AuthorizationMiddleware.js";
+} from "../middlewares/AuthMiddleware.js";
 import multer from "multer";
 import Message from "../model/MessagesModel.js";
 

@@ -1,7 +1,7 @@
 import express from "express";
 import passwordResetController from "../controllers/PasswordResetController.js";
 import { passwordResetLimiter } from "../utils/ratelimit/passwordResetLimiter.js";
-import { logSuspiciousActivity } from "../middlewares/AuthorizationMiddleware.js";
+import { logSuspiciousActivity } from "../middlewares/AuthMiddleware.js";
 
 const router = express.Router();
 
