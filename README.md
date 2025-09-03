@@ -42,8 +42,8 @@ npm install
 3. Configure environment variables:
 
 ```bash
-cp .env.example .env.production
-# Edit .env.production with your configuration
+cp .env.production .env
+# Edit .env with your configuration
 ```
 
 4. Set up the database:
@@ -67,7 +67,7 @@ npm start
 
 ### Environment Variables
 
-Create a `.env.production` file in the root directory:
+Create a `.env` file in the root directory:
 
 ```env
 PORT=3000
@@ -185,7 +185,7 @@ This project is licensed under the [LICENSE](LICENSE.txt) file in the repository
 docker build -t klovy-chat-backend .
 
 # Run container
-docker run -p 3000:3000 --env-file .env.production klovy-chat-backend
+docker run -p 3000:3000 --env-file .env klovy-chat-backend
 ```
 
 ### PM2 Deployment
