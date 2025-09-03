@@ -227,13 +227,21 @@ export default function createApp(__dirname) {
   );
 
   app.use("/api/auth", authRateLimiter, authRoutes);
+
   app.use("/api/password-reset", authRateLimiter, passwordResetRoutes);
+
   app.use("/whitelist", authRateLimiter, whitelistRoutes);
+
   app.use("/api", inviteRoutes);
+
   app.use("/api/contacts", whitelistCheck, contactsRoutes);
+
   app.use("/api/messages", sendLimiter, whitelistCheck, messagesRoutes);
+
   app.use("/api/channel", sendLimiter, whitelistCheck, channelRoutes);
+
   app.use("/api/user", whitelistCheck, userRoutes);
+  
   app.use("/api/user/status", whitelistCheck, statusRoutes);
 
   app.get("/api/security/report", authRateLimiter, async (req, res) => {
