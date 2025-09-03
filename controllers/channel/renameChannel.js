@@ -42,7 +42,7 @@ const renameChannel = async (req, res) => {
           name: channel.name,
         });
     }
-    
+
     return res.status(200).json({ name: channel.name });
   } catch (error) {
     console.error("Error renaming channel:", error);

@@ -28,27 +28,35 @@ const setupSocket = (server) => {
     pingTimeout: 60000,
     pingInterval: 25000,
     upgradeTimeout: 10000,
-    allowEIO3: false
+    allowEIO3: false,
   });
 
   const userSocketMap = new Map();
   const typingUsers = new Map();
   const userRateLimits = new Map();
 
-  const checkRateLimit = (userId, action, maxRequests = 30, windowMs = 60000) => {
+  const checkRateLimit = (
+    userId,
+    action,
+    maxRequests = 30,
+    windowMs = 60000,
+  ) => {
     const now = Date.now();
     const userLimits = userRateLimits.get(userId) || {};
-    const actionLimits = userLimits[action] || { count: 0, resetTime: now + windowMs };
-    
+    const actionLimits = userLimits[action] || {
+      count: 0,
+      resetTime: now + windowMs,
+    };
+
     if (now > actionLimits.resetTime) {
       actionLimits.count = 0;
       actionLimits.resetTime = now + windowMs;
     }
-    
+
     if (actionLimits.count >= maxRequests) {
       return false;
     }
-    
+
     actionLimits.count++;
     userLimits[action] = actionLimits;
     userRateLimits.set(userId, userLimits);
@@ -58,24 +66,25 @@ const setupSocket = (server) => {
   io.on("connection", (socket) => {
     try {
       const userId = socket.handshake.query.userId;
-      const userAgent = socket.handshake.headers['user-agent'];
+      const userAgent = socket.handshake.headers["user-agent"];
       const ip = socket.handshake.address;
 
-      if (!userId || typeof userId !== 'string' || userId.length > 50) {
+      if (!userId || typeof userId !== "string" || userId.length > 50) {
         console.warn(`Invalid userId provided: ${userId} from IP: ${ip}`);
         socket.disconnect(true);
         return;
       }
 
-      const existingConnections = Array.from(userSocketMap.entries())
-        .filter(([uid, socketId]) => uid === userId).length;
-      
+      const existingConnections = Array.from(userSocketMap.entries()).filter(
+        ([uid, socketId]) => uid === userId,
+      ).length;
+
       if (existingConnections > 3) {
         console.warn(`Too many connections for user: ${userId}`);
         socket.disconnect(true);
         return;
       }
-      
+
       userSocketMap.set(userId, socket.id);
       setUserOnline(userId);
       console.log(`User connected: ${userId} with socket ID: ${socket.id}`);
@@ -83,25 +92,42 @@ const setupSocket = (server) => {
       const withRateLimit = (eventName, handler, maxReq = 30) => {
         return (...args) => {
           if (!checkRateLimit(userId, eventName, maxReq)) {
-            console.warn(`Rate limit exceeded for user ${userId} on event ${eventName}`);
-            socket.emit('error', { message: 'Rate limit exceeded' });
+            console.warn(
+              `Rate limit exceeded for user ${userId} on event ${eventName}`,
+            );
+            socket.emit("error", { message: "Rate limit exceeded" });
             return;
           }
           handler(...args);
         };
       };
 
-      socket.on("add-channel-notify", withRateLimit("add-channel-notify", 
-        (channel) => addChannelNotify(channel, userSocketMap, io), 10
-      ));
-      
-      socket.on("sendMessage", withRateLimit("sendMessage",
-        (message) => sendMessage(message, userSocketMap, io), 30
-      ));
-      
-      socket.on("send-channel-message", withRateLimit("send-channel-message",
-        (message) => sendChannelMessage(message, userSocketMap, io), 30
-      ));
+      socket.on(
+        "add-channel-notify",
+        withRateLimit(
+          "add-channel-notify",
+          (channel) => addChannelNotify(channel, userSocketMap, io),
+          10,
+        ),
+      );
+
+      socket.on(
+        "sendMessage",
+        withRateLimit(
+          "sendMessage",
+          (message) => sendMessage(message, userSocketMap, io),
+          30,
+        ),
+      );
+
+      socket.on(
+        "send-channel-message",
+        withRateLimit(
+          "send-channel-message",
+          (message) => sendChannelMessage(message, userSocketMap, io),
+          30,
+        ),
+      );
       socket.on("typing", (data) =>
         handleTyping(data, typingUsers, userSocketMap, io),
       );

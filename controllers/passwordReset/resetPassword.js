@@ -11,10 +11,12 @@ export const resetPassword = async (req, res) => {
         .json({ message: "Token and new password are required" });
     }
 
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(newPassword)) {
-      return res.status(400).json({ 
-        message: "Password must be at least 8 characters long and contain uppercase, lowercase, number and special character" 
+      return res.status(400).json({
+        message:
+          "Password must be at least 8 characters long and contain uppercase, lowercase, number and special character",
       });
     }
 

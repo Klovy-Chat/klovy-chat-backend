@@ -10,7 +10,7 @@ const editMessage = async (req, res) => {
     if (!message) {
       return res.status(404).json({ error: "Message not found" });
     }
-    
+
     if (message.sender.toString() !== userId) {
       return res
         .status(403)

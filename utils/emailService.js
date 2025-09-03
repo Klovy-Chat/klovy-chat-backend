@@ -3,18 +3,22 @@ import dotenv from "dotenv";
 
 dotenv.config({ path: ".env" });
 
-if (!process.env.EMAIL_PASSWORD) {
+if (
+  !process.env.EMAIL_PASSWORD &&
+  !process.env.EMAIL_ADDRESS &&
+  !process.env.EMAIL_HOST
+) {
   throw new Error(
-    "EMAIL_PASSWORD environment variable is required but not provided",
+    "EMAIL_PASSWORD, EMAIL_ADDRESS, and EMAIL_HOST environment variables are required but not provided",
   );
 }
 
 const transporter = nodemailer.createTransport({
-  host: "mail1.titanaxe.com",
+  host: process.env.EMAIL_HOST,
   port: 465,
   secure: true,
   auth: {
-    user: "noreply@klovy.org",
+    user: process.env.EMAIL_ADDRESS,
     pass: process.env.EMAIL_PASSWORD,
   },
 });

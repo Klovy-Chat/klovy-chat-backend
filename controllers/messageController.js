@@ -9,5 +9,5 @@ export {
   addReaction,
   quoteMessage,
   editMessage,
-  deleteMessage
+  deleteMessage,
 };

@@ -19,7 +19,7 @@ const getAllContacts = async (request, response, next) => {
       } else {
         label = "Unknown";
       }
-      
+
       return {
         label,
         value: user._id,

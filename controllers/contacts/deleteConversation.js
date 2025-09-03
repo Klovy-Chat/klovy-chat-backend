@@ -15,7 +15,7 @@ const deleteConversation = async (req, res) => {
         { sender: contactId, recipient: userId },
       ],
     });
-    
+
     return res.status(200).json({ message: "Conversation deleted" });
   } catch (error) {
     console.error("Error deleting conversation:", error);

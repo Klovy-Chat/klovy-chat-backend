@@ -4,11 +4,11 @@ import Message from "../../model/MessagesModel.js";
 const getContactsForList = async (req, res, next) => {
   try {
     let userId = req.userId;
-    
+
     if (!userId) {
       return res.status(400).send("User ID is required.");
     }
-    
+
     userId = new mongoose.Types.ObjectId(userId);
     const contacts = await Message.aggregate([
       {
