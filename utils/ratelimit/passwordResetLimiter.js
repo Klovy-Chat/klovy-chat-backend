@@ -1,4 +1,4 @@
-import rateLimit from "express-rate-limit";
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 
 export const passwordResetLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -12,6 +12,6 @@ export const passwordResetLimiter = rateLimit({
   skipSuccessfulRequests: false,
   keyGenerator: (req) => {
     const email = req.body?.email || 'unknown';
-    return `${req.ip}-${email}`;
+    return `${ipKeyGenerator(req)}-${email}`;
   }
 });
