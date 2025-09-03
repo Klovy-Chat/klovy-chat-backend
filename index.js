@@ -10,9 +10,6 @@ import compression from "compression";
 import mongoSanitize from "express-mongo-sanitize";
 import xss from "xss-clean";
 import hpp from "hpp";
-import rateLimit from 'express-rate-limit';
-import slowDown from "express-slow-down";
-import validator from "validator";
 
 import authRoutes from "./routes/AuthRoutes.js";
 import contactsRoutes from "./routes/ContactRoutes.js";
@@ -24,9 +21,16 @@ import userRoutes from "./routes/UserRoutes.js";
 import statusRoutes from "./routes/StatusRoutes.js";
 import passwordResetRoutes from "./routes/PasswordResetRoutes.js";
 import inviteRoutes from "./routes/InviteRoutes.js";
-import { whitelistCheck } from "./middlewares/WhitelistMiddleware.js";
 
-import fs from "fs";
+import { whitelistCheck } from "./middlewares/WhitelistMiddleware.js";
+import { globalLimiter } from "./utils/ratelimit/globalLimiter.js";
+import { sendLimiter } from "./utils/ratelimit/sendLimiter.js";
+import { authRateLimiter } from "./utils/ratelimit/authRateLimiter.js";
+
+import validateJsonPayload from "./utils/validators/validateJsonPayload.js";
+import sanitizeInput from "./utils/validators/sanitizeInput.js";
+import fileTypeValidator from "./utils/validators/fileTypeValidator.js";
+
 dotenv.config({ path: ".env" });
 
 const __filename = fileURLToPath(import.meta.url);
@@ -69,109 +73,6 @@ app.use(xss());
 app.use(hpp({
   whitelist: ['sort', 'fields', 'page', 'limit']
 }));
-
-const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 1000, 
-  message: {
-    error: 'Too many requests from this IP, please try again later.',
-    retryAfter: 15 * 60 * 1000
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  skip: (req) => {
-    const trustedIPs = process.env.TRUSTED_IPS?.split(',') || [];
-    return trustedIPs.includes(req.ip);
-  }
-});
-
-const authRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
-  max: 10, 
-  message: {
-    error: 'Too many authentication attempts, please try again later.',
-    retryAfter: 15 * 60 * 1000
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  skipSuccessfulRequests: true, 
-});
-
-const sendLimiter = rateLimit({
-  windowMs: 60 * 1000, 
-  max: 500, 
-  message: {
-    error: 'Too many messages sent, please slow down.',
-    retryAfter: 60 * 1000
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-const speedLimiter = slowDown({
-  windowMs: 15 * 60 * 1000, 
-  delayAfter: 100,
-  delayMs: () => 500,
-  maxDelayMs: 20000,
-});
-
-const validateJsonPayload = (req, res, next) => {
-  if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH') {
-    if (req.headers['content-type']?.includes('application/json')) {
-      const contentLength = parseInt(req.headers['content-length'] || '0');
-      if (contentLength > 10 * 1024 * 1024) { 
-        return res.status(413).json({ error: 'Payload too large' });
-      }
-    }
-  }
-  next();
-};
-
-const sanitizeInput = (req, res, next) => {
-  for (const key in req.query) {
-    if (typeof req.query[key] === 'string') {
-      req.query[key] = validator.escape(req.query[key]);
-    }
-  }
-  
-  if (req.body && typeof req.body === 'object') {
-    const sensitiveFields = ['email', 'username', 'message'];
-    
-    for (const field of sensitiveFields) {
-      if (req.body[field] && typeof req.body[field] === 'string') {
-        req.body[field] = req.body[field]
-          .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-          .replace(/javascript:/gi, '')
-          .replace(/on\w+\s*=/gi, '');
-      }
-    }
-  }
-  
-  next();
-};
-
-const fileTypeValidator = (allowedTypes) => {
-  return (req, res, next) => {
-    if (req.file || req.files) {
-      const files = req.files || [req.file];
-      
-      for (const file of files) {
-        if (file && !allowedTypes.includes(file.mimetype)) {
-          return res.status(400).json({
-            error: 'Invalid file type. Allowed types: ' + allowedTypes.join(', ')
-          });
-        }
-        
-        if (file && file.size > 20 * 1024 * 1024) { 
-          return res.status(400).json({
-            error: 'File too large. Maximum size: 20MB'
-          });
-        }
-      }
-    }
-    next();
-  };
-};
 
 mongoose.set('strictQuery', true);
 mongoose
