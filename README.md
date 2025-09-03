@@ -27,29 +27,34 @@ A robust, scalable backend API for the Klovy Chat messenger application built wi
 ## 📦 Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/Klovy/klovy-chat-backend.git
 cd klovy-chat-backend
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Configure environment variables:
+
 ```bash
 cp .env.example .env.production
 # Edit .env.production with your configuration
 ```
 
 4. Set up the database:
+
 ```bash
 npm run db:migrate
 npm run db:seed
 ```
 
 5. Start the server:
+
 ```bash
 # Development
 npm run dev
@@ -174,6 +179,7 @@ This project is licensed under the [LICENSE](LICENSE.txt) file in the repository
 ## 🚀 Deployment
 
 ### Docker Deployment
+
 ```bash
 # Build image
 docker build -t klovy-chat-backend .
@@ -183,6 +189,7 @@ docker run -p 3000:3000 --env-file .env.production klovy-chat-backend
 ```
 
 ### PM2 Deployment
+
 ```bash
 # Install PM2
 npm install -g pm2
@@ -198,4 +205,4 @@ pm2 status
 
 **Made with ❤️ by the Klovy Team**
 
-*Star ⭐ this repository if you find it helpful!*
+_Star ⭐ this repository if you find it helpful!_

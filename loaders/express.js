@@ -33,38 +33,40 @@ dotenv.config({ path: ".env" });
 export default function createApp(__dirname) {
   const app = express();
 
-  app.use(helmet({
-    crossOriginResourcePolicy: { policy: "cross-origin" },
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        scriptSrc: ["'self'"],
-        imgSrc: ["'self'", "data:", "https:"],
-        connectSrc: ["'self'", "ws:", "wss:"],
-        fontSrc: ["'self'"],
-        objectSrc: ["'none'"],
-        mediaSrc: ["'self'"],
-        frameSrc: ["'none'"],
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: { policy: "cross-origin" },
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          scriptSrc: ["'self'"],
+          imgSrc: ["'self'", "data:", "https:"],
+          connectSrc: ["'self'", "ws:", "wss:"],
+          fontSrc: ["'self'"],
+          objectSrc: ["'none'"],
+          mediaSrc: ["'self'"],
+          frameSrc: ["'none'"],
+        },
       },
-    },
-    hsts: {
-      maxAge: 31536000,
-      includeSubDomains: true,
-      preload: true
-    }
-  }));
+      hsts: {
+        maxAge: 31536000,
+        includeSubDomains: true,
+        preload: true,
+      },
+    }),
+  );
 
   app.use(compression());
-  app.use(mongoSanitize({ replaceWith: '_' }));
+  app.use(mongoSanitize({ replaceWith: "_" }));
   app.use(xss());
-  app.use(hpp({ whitelist: ['sort', 'fields', 'page', 'limit'] }));
+  app.use(hpp({ whitelist: ["sort", "fields", "page", "limit"] }));
   app.use(globalLimiter);
-  app.set('trust proxy', 1);
+  app.set("trust proxy", 1);
 
-  const allowedOrigins = [
-    process.env.ORIGIN || "http://localhost:5173",
-  ].filter(Boolean);
+  const allowedOrigins = [process.env.ORIGIN || "http://localhost:5173"].filter(
+    Boolean,
+  );
 
   app.use(
     cors({
@@ -73,63 +75,73 @@ export default function createApp(__dirname) {
         if (allowedOrigins.includes(origin)) {
           return callback(null, true);
         } else {
-          return callback(new Error('Not allowed by CORS'));
+          return callback(new Error("Not allowed by CORS"));
         }
       },
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
       credentials: true,
       allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
       exposedHeaders: ["Content-Disposition"],
-      maxAge: 86400, 
-    })
+      maxAge: 86400,
+    }),
   );
 
   app.use(cookieParser());
-  app.use(express.json({ 
-    limit: '10mb',
-    type: ['application/json', 'text/plain']
-  }));
-  app.use(express.urlencoded({ 
-    extended: true, 
-    limit: '10mb' 
-  }));
+  app.use(
+    express.json({
+      limit: "10mb",
+      type: ["application/json", "text/plain"],
+    }),
+  );
+  app.use(
+    express.urlencoded({
+      extended: true,
+      limit: "10mb",
+    }),
+  );
   app.use(validateJsonPayload);
   app.use(sanitizeInput);
 
   const setSecureStaticHeaders = (res, path, stat) => {
     res.set("Cross-Origin-Resource-Policy", "cross-origin");
-    res.set("Access-Control-Allow-Origin", process.env.ORIGIN || "http://localhost:5173");
+    res.set(
+      "Access-Control-Allow-Origin",
+      process.env.ORIGIN || "http://localhost:5173",
+    );
     res.set("X-Content-Type-Options", "nosniff");
-    res.set("Cache-Control", "public, max-age=86400"); 
+    res.set("Cache-Control", "public, max-age=86400");
   };
 
-  app.use("/uploads/profiles", 
+  app.use(
+    "/uploads/profiles",
     sendLimiter,
-    fileTypeValidator(['image/jpeg', 'image/png', 'image/webp']),
+    fileTypeValidator(["image/jpeg", "image/png", "image/webp"]),
     express.static(path.join(__dirname, "uploads/profiles"), {
       setHeaders: setSecureStaticHeaders,
-      maxAge: '1d',
-      etag: true
-    })
+      maxAge: "1d",
+      etag: true,
+    }),
   );
 
-  app.use("/uploads/files", 
+  app.use(
+    "/uploads/files",
     sendLimiter,
     express.static(path.join(__dirname, "uploads/files"), {
       setHeaders: setSecureStaticHeaders,
-      maxAge: '1h',
-      etag: true
-    })
+      maxAge: "1h",
+      etag: true,
+    }),
   );
 
-  app.use("/uploads/channels", 
+  app.use(
+    "/uploads/channels",
     sendLimiter,
-    fileTypeValidator(['image/jpeg', 'image/png', 'image/webp']),
+    fileTypeValidator(["image/jpeg", "image/png", "image/webp"]),
     express.static(path.join(__dirname, "uploads/channels"), {
       setHeaders: setSecureStaticHeaders,
-      maxAge: '1d',
-      etag: true
-    })
+      maxAge: "1d",
+      etag: true,
+    }),
   );
 
   app.use("/api/auth", authRateLimiter, authRoutes);
@@ -142,11 +154,11 @@ export default function createApp(__dirname) {
   app.use("/api/user", whitelistCheck, userRoutes);
   app.use("/api/user/status", whitelistCheck, statusRoutes);
 
-  app.use('*', (req, res) => {
+  app.use("*", (req, res) => {
     res.status(404).json({
-      error: 'Route not found',
+      error: "Route not found",
       path: req.originalUrl,
-      method: req.method
+      method: req.method,
     });
   });
 
@@ -157,8 +169,8 @@ export default function createApp(__dirname) {
       url: req.url,
       method: req.method,
       ip: req.ip,
-      userAgent: req.get('User-Agent'),
-      timestamp: new Date().toISOString()
+      userAgent: req.get("User-Agent"),
+      timestamp: new Date().toISOString(),
     });
     if (process.env.NODE_ENV === "production") {
       if (err.status === 400) {
@@ -175,7 +187,7 @@ export default function createApp(__dirname) {
     } else {
       res.status(err.status || 500).json({
         error: err.message,
-        stack: err.stack
+        stack: err.stack,
       });
     }
   });

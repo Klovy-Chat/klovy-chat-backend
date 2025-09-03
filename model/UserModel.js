@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema(
     firstName: {
       type: String,
       default: null,
-      trim: true
+      trim: true,
     },
     lastName: {
       type: String,
@@ -78,7 +78,7 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 userSchema.pre("save", async function (next) {
@@ -90,6 +90,7 @@ userSchema.pre("save", async function (next) {
     const saltRounds = 10;
     const salt = await bcrypt.genSalt(saltRounds);
     this.password = await bcrypt.hash(this.password, salt);
+
     next();
   } catch (error) {
     next(error);
