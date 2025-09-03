@@ -76,6 +76,9 @@ ORIGIN=https://your-frontend-domain.com
 DATABASE_URL=your_database_connection_string
 WHITELIST_ENABLED=false
 TURNSTILE_SECRET_KEY=your_cloudflare_turnstile_secret_key
+
+EMAIL_HOST=
+EMAIL_ADDRESS=your_email_service_address
 EMAIL_PASSWORD=your_email_service_password
 ```
 
