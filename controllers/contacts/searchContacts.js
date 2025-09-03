@@ -68,7 +68,7 @@ const searchContacts = async (request, response, next) => {
     });
 
     const limitedResults = exactMatchContacts.slice(0, 10);
-    
+
     return response.status(200).json({ contacts: limitedResults });
   } catch (error) {
     console.log({ error });

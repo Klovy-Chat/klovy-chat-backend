@@ -5,7 +5,7 @@ export const adminActionLimiter = rateLimit({
   max: 20,
   message: {
     error: "Too many admin actions. Slow down.",
-    retryAfter: 300
+    retryAfter: 300,
   },
   standardHeaders: true,
   legacyHeaders: false,

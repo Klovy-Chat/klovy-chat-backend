@@ -28,7 +28,9 @@ import validateJsonPayload from "../utils/validators/validateJsonPayload.js";
 import sanitizeInput from "../utils/validators/sanitizeInput.js";
 import fileTypeValidator from "../utils/validators/fileTypeValidator.js";
 
-import ipBlocker, { trackSuspiciousActivity } from "../middlewares/IPBlocker.js";
+import ipBlocker, {
+  trackSuspiciousActivity,
+} from "../middlewares/IPBlocker.js";
 import securityMonitor from "../utils/security/SecurityMonitor.js";
 
 dotenv.config({ path: ".env" });
@@ -68,14 +70,25 @@ export default function createApp(__dirname) {
   app.set("trust proxy", 1);
 
   app.use((req, res, next) => {
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('X-Frame-Options', 'DENY');
-    res.setHeader('X-XSS-Protection', '1; mode=block');
-    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-    res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("X-Frame-Options", "DENY");
+    res.setHeader("X-XSS-Protection", "1; mode=block");
+    res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+    res.setHeader(
+      "Permissions-Policy",
+      "geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), speaker=()",
+    );
 
-    res.removeHeader('X-Powered-By');
-    
+    res.setHeader("X-Download-Options", "noopen");
+    res.setHeader("X-Permitted-Cross-Domain-Policies", "none");
+    res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+    res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+
+    res.removeHeader("X-Powered-By");
+    res.removeHeader("Server");
+
+    req.requestStartTime = Date.now();
+
     next();
   });
 
@@ -98,10 +111,24 @@ export default function createApp(__dirname) {
           return callback(new Error("Not allowed by CORS"));
         }
       },
-      methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       credentials: true,
-      allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-      exposedHeaders: ["Content-Disposition"],
+      allowedHeaders: [
+        "Content-Type",
+        "Authorization",
+        "X-Requested-With",
+        "X-CSRF-Token",
+        "X-Client-Version",
+        "Accept",
+        "Accept-Language",
+        "Accept-Encoding",
+      ],
+      exposedHeaders: [
+        "Content-Disposition",
+        "X-Total-Count",
+        "X-Rate-Limit-Remaining",
+        "X-Rate-Limit-Reset",
+      ],
       maxAge: 86400,
     }),
   );
@@ -130,30 +157,30 @@ export default function createApp(__dirname) {
       /on\w+\s*=/gi,
       /union.*select/gi,
       /drop\s+table/gi,
-      /exec\s*\(/gi
+      /exec\s*\(/gi,
     ];
-    
+
     const requestString = JSON.stringify({
       url: req.url,
       body: req.body,
-      query: req.query
+      query: req.query,
     });
-    
-    const isSuspicious = suspiciousPatterns.some(pattern => 
-      pattern.test(requestString)
+
+    const isSuspicious = suspiciousPatterns.some((pattern) =>
+      pattern.test(requestString),
     );
-    
+
     if (isSuspicious) {
-      console.warn('Suspicious request detected:', {
+      console.warn("Suspicious request detected:", {
         ip: req.ip,
         url: req.url,
-        userAgent: req.get('User-Agent'),
-        timestamp: new Date().toISOString()
+        userAgent: req.get("User-Agent"),
+        timestamp: new Date().toISOString(),
       });
-      
-      return res.status(400).json({ error: 'Invalid request' });
+
+      return res.status(400).json({ error: "Invalid request" });
     }
-    
+
     next();
   });
 
@@ -209,22 +236,19 @@ export default function createApp(__dirname) {
   app.use("/api/user", whitelistCheck, userRoutes);
   app.use("/api/user/status", whitelistCheck, statusRoutes);
 
-  app.get("/api/security/report", 
-    authRateLimiter,
-    async (req, res) => {
-      try {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || authHeader !== `Bearer ${process.env.ADMIN_SECRET}`) {
-          return res.status(401).json({ error: "Unauthorized" });
-        }
-        
-        const report = securityMonitor.getSecurityReport();
-        res.json(report);
-      } catch (error) {
-        res.status(500).json({ error: "Failed to generate security report" });
+  app.get("/api/security/report", authRateLimiter, async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || authHeader !== `Bearer ${process.env.ADMIN_SECRET}`) {
+        return res.status(401).json({ error: "Unauthorized" });
       }
+
+      const report = securityMonitor.getSecurityReport();
+      res.json(report);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to generate security report" });
     }
-  );
+  });
 
   app.use("*", (req, res) => {
     res.status(404).json({

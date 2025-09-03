@@ -5,7 +5,7 @@ export const signupLimiter = rateLimit({
   max: 3,
   message: {
     error: "Too many signup attempts. Try again in 1 hour.",
-    retryAfter: 3600
+    retryAfter: 3600,
   },
   standardHeaders: true,
   legacyHeaders: false,

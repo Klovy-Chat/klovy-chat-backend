@@ -4,10 +4,10 @@ import {
   uploadFile,
   editMessage,
 } from "../controllers/MessagesController.js";
-import verifyToken, { 
+import verifyToken, {
   requireActiveAccount,
   requireOwnershipOrAdmin,
-  logSuspiciousActivity 
+  logSuspiciousActivity,
 } from "../middlewares/AuthMiddleware.js";
 import multer from "multer";
 import Message from "../model/MessagesModel.js";
@@ -15,46 +15,53 @@ import Message from "../model/MessagesModel.js";
 const messagesRoutes = Router();
 const upload = multer({
   dest: "uploads/files/",
-  limits: { 
+  limits: {
     fileSize: 20 * 1024 * 1024,
-    files: 1
+    files: 1,
   },
   fileFilter: (req, file, cb) => {
     const allowedTypes = [
-      'image/jpeg', 'image/jpg', 'image/png', 'image/webp',
-      'application/pdf', 'text/plain',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "application/pdf",
+      "text/plain",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     ];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type'), false);
+      cb(new Error("Invalid file type"), false);
     }
-  }
+  },
 });
 
-messagesRoutes.post("/get-messages", 
-  verifyToken, 
+messagesRoutes.post(
+  "/get-messages",
+  verifyToken,
   requireActiveAccount,
-  logSuspiciousActivity('get-messages'),
-  getMessages
+  logSuspiciousActivity("get-messages"),
+  getMessages,
 );
 
-messagesRoutes.post("/upload-file",
+messagesRoutes.post(
+  "/upload-file",
   verifyToken,
   requireActiveAccount,
   upload.single("file"),
-  logSuspiciousActivity('file-upload'),
+  logSuspiciousActivity("file-upload"),
   uploadFile,
 );
 
-messagesRoutes.put("/:messageId", 
-  verifyToken, 
+messagesRoutes.put(
+  "/:messageId",
+  verifyToken,
   requireActiveAccount,
-  requireOwnershipOrAdmin(Message, 'messageId'),
-  logSuspiciousActivity('edit-message'),
-  editMessage
+  requireOwnershipOrAdmin(Message, "messageId"),
+  logSuspiciousActivity("edit-message"),
+  editMessage,
 );
 
 messagesRoutes.delete("/:messageId", verifyToken, async (req, res) => {
@@ -77,7 +84,7 @@ messagesRoutes.delete("/:messageId", verifyToken, async (req, res) => {
       deleted: true,
       deletedAt: new Date(),
     });
-    
+
     res.json({ success: true });
   } catch (error) {
     console.error("Error in deleteMessage:", error);

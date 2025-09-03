@@ -4,7 +4,7 @@ import Channel from "../../model/ChannelModel.js";
 const getUserChannels = async (req, res) => {
   try {
     const userId = new mongoose.Types.ObjectId(req.userId);
-    
+
     const channels = await Channel.find({
       $or: [{ admin: userId }, { members: userId }],
     })

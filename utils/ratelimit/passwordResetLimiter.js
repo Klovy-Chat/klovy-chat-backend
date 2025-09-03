@@ -5,13 +5,13 @@ export const passwordResetLimiter = rateLimit({
   max: 3,
   message: {
     error: "Too many password reset attempts. Try again in 15 minutes.",
-    retryAfter: 900
+    retryAfter: 900,
   },
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: false,
   keyGenerator: (req) => {
-    const email = req.body?.email || 'unknown';
+    const email = req.body?.email || "unknown";
     return `${ipKeyGenerator(req)}-${email}`;
-  }
+  },
 });

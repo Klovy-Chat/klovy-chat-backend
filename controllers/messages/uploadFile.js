@@ -22,25 +22,31 @@ const uploadFile = async (request, response, next) => {
         return response.status(400).send("Invalid file type.");
       }
 
-      if (originalName.includes('..') || originalName.includes('/') || originalName.includes('\\')) {
+      if (
+        originalName.includes("..") ||
+        originalName.includes("/") ||
+        originalName.includes("\\")
+      ) {
         return response.status(400).send("Invalid file name.");
       }
 
       const userId = request.user?.id || request.userId;
-      
+
       if (!userId) {
         return response.status(401).send("Authentication required.");
       }
 
       const timestamp = Date.now();
-      const sanitizedUserId = userId.toString().replace(/[^a-zA-Z0-9]/g, '');
+      const sanitizedUserId = userId.toString().replace(/[^a-zA-Z0-9]/g, "");
 
       let fileDir = `uploads/files/${timestamp}`;
       let fileName = `${fileDir}/${sanitizedUserId}-${timestamp}.${ext}`;
 
       const resolvedPath = path.resolve(fileName);
-      const expectedPath = path.resolve(`uploads/files/${timestamp}/${sanitizedUserId}-${timestamp}.${ext}`);
-      
+      const expectedPath = path.resolve(
+        `uploads/files/${timestamp}/${sanitizedUserId}-${timestamp}.${ext}`,
+      );
+
       if (resolvedPath !== expectedPath) {
         return response.status(400).send("Invalid file path.");
       }

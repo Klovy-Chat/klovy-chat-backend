@@ -25,7 +25,7 @@ const leaveChannel = async (req, res) => {
       const io = req.app.get("io");
       io.to(userId).emit("channel-left", { channelId });
     }
-    
+
     return res.status(200).json({ message: "Left channel" });
   } catch (error) {
     console.error("Error leaving channel:", error);

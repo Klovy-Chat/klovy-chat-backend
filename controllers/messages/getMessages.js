@@ -10,7 +10,10 @@ const getMessages = async (req, res, next) => {
       return res.status(400).send("Both user IDs are required.");
     }
 
-    if (!mongoose.Types.ObjectId.isValid(user1) || !mongoose.Types.ObjectId.isValid(user2)) {
+    if (
+      !mongoose.Types.ObjectId.isValid(user1) ||
+      !mongoose.Types.ObjectId.isValid(user2)
+    ) {
       return res.status(400).send("Invalid user ID format.");
     }
 

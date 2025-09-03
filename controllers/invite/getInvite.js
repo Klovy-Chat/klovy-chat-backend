@@ -6,7 +6,7 @@ const getInvite = async (req, res) => {
     const invite = await Invite.findOne({ inviteId }).populate("channelId");
 
     if (!invite) return res.status(404).json({ error: "Invite not found" });
-    
+
     res.json({ invite });
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -5,7 +5,7 @@ export const emailVerificationLimiter = rateLimit({
   max: 10,
   message: {
     error: "Too many email verification attempts. Try again in 1 hour.",
-    retryAfter: 3600
+    retryAfter: 3600,
   },
   standardHeaders: true,
   legacyHeaders: false,

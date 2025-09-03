@@ -3,7 +3,11 @@ import dotenv from "dotenv";
 
 dotenv.config({ path: ".env" });
 
-if (!process.env.EMAIL_PASSWORD && !process.env.EMAIL_ADDRESS && !process.env.EMAIL_HOST) {
+if (
+  !process.env.EMAIL_PASSWORD &&
+  !process.env.EMAIL_ADDRESS &&
+  !process.env.EMAIL_HOST
+) {
   throw new Error(
     "EMAIL_PASSWORD, EMAIL_ADDRESS, and EMAIL_HOST environment variables are required but not provided",
   );

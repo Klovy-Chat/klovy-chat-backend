@@ -56,7 +56,7 @@ const acceptInvite = async (req, res) => {
     await channel.save();
     invite.used = true;
     await invite.save();
-    
+
     res.json({ success: true, channelId: channel._id });
   } catch (err) {
     res.status(500).json({ error: err.message });
