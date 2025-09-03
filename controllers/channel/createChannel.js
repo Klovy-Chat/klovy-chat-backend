@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import Channel from "../../model/ChannelModel.js";
 import User from "../../model/UserModel.js";
 

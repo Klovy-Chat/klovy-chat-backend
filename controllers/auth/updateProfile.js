@@ -2,7 +2,7 @@ import User from "../../model/UserModel.js";
 
 const updateProfile = async (req, res) => {
   try {
-    const { userId } = req;
+    const userId = req.userId;
     const { firstName, lastName, color } = req.body;
 
     if (!userId) {

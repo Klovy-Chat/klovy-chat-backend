@@ -5,7 +5,7 @@ import fs from "fs";
 
 const removeProfileImage = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.userId;
     const user = await User.findById(userId);
 
     if (!user) {

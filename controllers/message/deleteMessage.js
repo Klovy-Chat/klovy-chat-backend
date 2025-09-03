@@ -3,7 +3,7 @@ import Message from "../../model/MessagesModel.js";
 const deleteMessage = async (req, res) => {
   try {
     const { messageId } = req.params;
-    const userId = req.user.id;
+    const userId = req.userId;
 
     const message = await Message.findById(messageId);
     if (!message) {

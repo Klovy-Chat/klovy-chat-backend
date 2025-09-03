@@ -15,7 +15,9 @@ const storage = multer.diskStorage({
     const ext = path.extname(file.originalname);
     const channelId = req.params?.channelId || "unknown";
     const timestamp = Date.now();
+    
     const uniqueName = `${channelId}-${timestamp}${ext}`;
+
     cb(null, uniqueName);
   },
 });

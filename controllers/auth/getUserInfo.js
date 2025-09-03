@@ -2,10 +2,10 @@ import User from "../../model/UserModel.js";
 
 const getUserInfo = async (req, res) => {
   try {
-    const { userId } = req;
+    const userId = req.userId;
 
     if (!userId) {
-      return res.status(404).send("User id not found.");
+      return res.status(401).send("User not authenticated.");
     }
 
     const user = await User.findById(userId);

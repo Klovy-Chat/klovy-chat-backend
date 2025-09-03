@@ -2,7 +2,7 @@ import User from "../model/UserModel.js";
 
 export const updateUserStatus = async (req, res) => {
   try {
-    const { userId } = req.user;
+    const userId = req.userId;
     const { customStatus } = req.body;
 
     if (!customStatus)

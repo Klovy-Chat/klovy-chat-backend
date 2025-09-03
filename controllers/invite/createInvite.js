@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 const createInvite = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user.id;
+    const userId = req.userId;
 
     const channel = await Channel.findById(id).populate("admin");
 
@@ -26,7 +26,7 @@ const createInvite = async (req, res) => {
       createdBy: userId,
       expiresAt: null,
     });
-    
+
     res.json({
       inviteId: invite.inviteId,
       url: `https://chat.klovy.org/invite/${invite.inviteId}`,

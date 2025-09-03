@@ -28,6 +28,9 @@ import validateJsonPayload from "../utils/validators/validateJsonPayload.js";
 import sanitizeInput from "../utils/validators/sanitizeInput.js";
 import fileTypeValidator from "../utils/validators/fileTypeValidator.js";
 
+import ipBlocker, { trackSuspiciousActivity } from "../middlewares/IPBlocker.js";
+import securityMonitor from "../utils/security/SecurityMonitor.js";
+
 dotenv.config({ path: ".env" });
 
 export default function createApp(__dirname) {
@@ -61,8 +64,25 @@ export default function createApp(__dirname) {
   app.use(mongoSanitize({ replaceWith: "_" }));
   app.use(xss());
   app.use(hpp({ whitelist: ["sort", "fields", "page", "limit"] }));
-  app.use(globalLimiter);
+
   app.set("trust proxy", 1);
+
+  app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+
+    res.removeHeader('X-Powered-By');
+    
+    next();
+  });
+
+  app.use(securityMonitor.middleware());
+  app.use(ipBlocker.middleware());
+  app.use(trackSuspiciousActivity);
+  app.use(globalLimiter);
 
   const allowedOrigins = [process.env.ORIGIN || "http://localhost:5173"].filter(
     Boolean,
@@ -101,6 +121,41 @@ export default function createApp(__dirname) {
   );
   app.use(validateJsonPayload);
   app.use(sanitizeInput);
+
+  app.use((req, res, next) => {
+    const suspiciousPatterns = [
+      /\.\./g,
+      /<script/gi,
+      /javascript:/gi,
+      /on\w+\s*=/gi,
+      /union.*select/gi,
+      /drop\s+table/gi,
+      /exec\s*\(/gi
+    ];
+    
+    const requestString = JSON.stringify({
+      url: req.url,
+      body: req.body,
+      query: req.query
+    });
+    
+    const isSuspicious = suspiciousPatterns.some(pattern => 
+      pattern.test(requestString)
+    );
+    
+    if (isSuspicious) {
+      console.warn('Suspicious request detected:', {
+        ip: req.ip,
+        url: req.url,
+        userAgent: req.get('User-Agent'),
+        timestamp: new Date().toISOString()
+      });
+      
+      return res.status(400).json({ error: 'Invalid request' });
+    }
+    
+    next();
+  });
 
   const setSecureStaticHeaders = (res, path, stat) => {
     res.set("Cross-Origin-Resource-Policy", "cross-origin");
@@ -153,6 +208,23 @@ export default function createApp(__dirname) {
   app.use("/api/channel", sendLimiter, whitelistCheck, channelRoutes);
   app.use("/api/user", whitelistCheck, userRoutes);
   app.use("/api/user/status", whitelistCheck, statusRoutes);
+
+  app.get("/api/security/report", 
+    authRateLimiter,
+    async (req, res) => {
+      try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || authHeader !== `Bearer ${process.env.ADMIN_SECRET}`) {
+          return res.status(401).json({ error: "Unauthorized" });
+        }
+        
+        const report = securityMonitor.getSecurityReport();
+        res.json(report);
+      } catch (error) {
+        res.status(500).json({ error: "Failed to generate security report" });
+      }
+    }
+  );
 
   app.use("*", (req, res) => {
     res.status(404).json({

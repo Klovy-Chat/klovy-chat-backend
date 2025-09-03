@@ -1,22 +1,26 @@
 import User from "../../model/UserModel.js";
 import { compare } from "bcrypt";
 import { createToken, maxAge } from "../../utils/auth/tokenUtils.js";
+import { addLoginDelay } from "../../utils/security/addLoginDelay.js";
 
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
+      await addLoginDelay();
       return res.status(400).send("Email and Password Required");
     }
 
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(404).send("User not found");
+      await addLoginDelay();
+      return res.status(400).send("Invalid credentials");
     }
 
     if (!user.isWhitelisted && !user.isEmailVerified) {
+      await addLoginDelay();
       return res
         .status(403)
         .json({ message: "Musisz zweryfikować e-mail, zanim się zalogujesz." });
@@ -25,7 +29,8 @@ const login = async (req, res) => {
     const auth = await compare(password, user.password);
 
     if (!auth) {
-      return res.status(400).send("Invalid Password");
+      await addLoginDelay();
+      return res.status(400).send("Invalid credentials");
     }
 
     const jwtToken = await createToken(email, user.id);

@@ -24,31 +24,84 @@ const setupSocket = (server) => {
       methods: ["GET", "POST"],
       credentials: true,
     },
+    maxHttpBufferSize: 1e6,
+    pingTimeout: 60000,
+    pingInterval: 25000,
+    upgradeTimeout: 10000,
+    allowEIO3: false
   });
 
   const userSocketMap = new Map();
   const typingUsers = new Map();
+  const userRateLimits = new Map();
+
+  const checkRateLimit = (userId, action, maxRequests = 30, windowMs = 60000) => {
+    const now = Date.now();
+    const userLimits = userRateLimits.get(userId) || {};
+    const actionLimits = userLimits[action] || { count: 0, resetTime: now + windowMs };
+    
+    if (now > actionLimits.resetTime) {
+      actionLimits.count = 0;
+      actionLimits.resetTime = now + windowMs;
+    }
+    
+    if (actionLimits.count >= maxRequests) {
+      return false;
+    }
+    
+    actionLimits.count++;
+    userLimits[action] = actionLimits;
+    userRateLimits.set(userId, userLimits);
+    return true;
+  };
 
   io.on("connection", (socket) => {
     try {
       const userId = socket.handshake.query.userId;
-      if (userId) {
-        userSocketMap.set(userId, socket.id);
-        setUserOnline(userId);
-        console.log(`User connected: ${userId} with socket ID: ${socket.id}`);
-      } else {
-        console.log("User ID not provided during connection.");
+      const userAgent = socket.handshake.headers['user-agent'];
+      const ip = socket.handshake.address;
+
+      if (!userId || typeof userId !== 'string' || userId.length > 50) {
+        console.warn(`Invalid userId provided: ${userId} from IP: ${ip}`);
+        socket.disconnect(true);
+        return;
       }
 
-      socket.on("add-channel-notify", (channel) =>
-        addChannelNotify(channel, userSocketMap, io),
-      );
-      socket.on("sendMessage", (message) =>
-        sendMessage(message, userSocketMap, io),
-      );
-      socket.on("send-channel-message", (message) =>
-        sendChannelMessage(message, userSocketMap, io),
-      );
+      const existingConnections = Array.from(userSocketMap.entries())
+        .filter(([uid, socketId]) => uid === userId).length;
+      
+      if (existingConnections > 3) {
+        console.warn(`Too many connections for user: ${userId}`);
+        socket.disconnect(true);
+        return;
+      }
+      
+      userSocketMap.set(userId, socket.id);
+      setUserOnline(userId);
+      console.log(`User connected: ${userId} with socket ID: ${socket.id}`);
+
+      const withRateLimit = (eventName, handler, maxReq = 30) => {
+        return (...args) => {
+          if (!checkRateLimit(userId, eventName, maxReq)) {
+            console.warn(`Rate limit exceeded for user ${userId} on event ${eventName}`);
+            socket.emit('error', { message: 'Rate limit exceeded' });
+            return;
+          }
+          handler(...args);
+        };
+      };
+
+      socket.on("add-channel-notify", withRateLimit("add-channel-notify", 
+        (channel) => addChannelNotify(channel, userSocketMap, io), 10
+      ));
+      
+      socket.on("sendMessage", withRateLimit("sendMessage",
+        (message) => sendMessage(message, userSocketMap, io), 30
+      ));
+      
+      socket.on("send-channel-message", withRateLimit("send-channel-message",
+        (message) => sendChannelMessage(message, userSocketMap, io), 30
+      ));
       socket.on("typing", (data) =>
         handleTyping(data, typingUsers, userSocketMap, io),
       );

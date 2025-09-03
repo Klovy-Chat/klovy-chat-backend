@@ -11,6 +11,13 @@ export const resetPassword = async (req, res) => {
         .json({ message: "Token and new password are required" });
     }
 
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      return res.status(400).json({ 
+        message: "Password must be at least 8 characters long and contain uppercase, lowercase, number and special character" 
+      });
+    }
+
     const users = await User.find({
       resetPasswordToken: { $ne: null },
       resetPasswordExpires: { $gt: Date.now() },
@@ -26,7 +33,7 @@ export const resetPassword = async (req, res) => {
           break;
         }
       } catch (err) {
-        console.error("Error comparing token for user:", user.email, err);
+        console.error("Token comparison error");
       }
     }
 

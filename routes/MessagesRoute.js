@@ -5,25 +5,58 @@ import {
   editMessage,
 } from "../controllers/MessagesController.js";
 import verifyToken from "../middlewares/AuthMiddleware.js";
+import { 
+  requireActiveAccount,
+  requireOwnershipOrAdmin,
+  logSuspiciousActivity 
+} from "../middlewares/AuthorizationMiddleware.js";
 import multer from "multer";
 import Message from "../model/MessagesModel.js";
 
 const messagesRoutes = Router();
 const upload = multer({
   dest: "uploads/files/",
-  limits: { fileSize: 20 * 1024 * 1024 },
+  limits: { 
+    fileSize: 20 * 1024 * 1024,
+    files: 1
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = [
+      'image/jpeg', 'image/jpg', 'image/png', 'image/webp',
+      'application/pdf', 'text/plain',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    ];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type'), false);
+    }
+  }
 });
 
-messagesRoutes.post("/get-messages", verifyToken, getMessages);
+messagesRoutes.post("/get-messages", 
+  verifyToken, 
+  requireActiveAccount,
+  logSuspiciousActivity('get-messages'),
+  getMessages
+);
 
-messagesRoutes.post(
-  "/upload-file",
+messagesRoutes.post("/upload-file",
   verifyToken,
+  requireActiveAccount,
   upload.single("file"),
+  logSuspiciousActivity('file-upload'),
   uploadFile,
 );
 
-messagesRoutes.put("/:messageId", verifyToken, editMessage);
+messagesRoutes.put("/:messageId", 
+  verifyToken, 
+  requireActiveAccount,
+  requireOwnershipOrAdmin(Message, 'messageId'),
+  logSuspiciousActivity('edit-message'),
+  editMessage
+);
 
 messagesRoutes.delete("/:messageId", verifyToken, async (req, res) => {
   try {

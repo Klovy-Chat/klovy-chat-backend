@@ -4,7 +4,7 @@ const editMessage = async (req, res) => {
   try {
     const { messageId } = req.params;
     const { content } = req.body;
-    const userId = req.user.id;
+    const userId = req.userId;
 
     const message = await Message.findById(messageId);
     if (!message) {
@@ -20,7 +20,7 @@ const editMessage = async (req, res) => {
     message.content = content;
     message.edited = true;
     message.editedAt = new Date();
-    
+
     await message.save();
 
     if (req.app && req.app.get("io")) {
